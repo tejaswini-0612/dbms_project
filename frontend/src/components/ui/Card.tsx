@@ -9,8 +9,8 @@ interface CardProps {
 
 const paddingMap = {
   sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
+  md: 'p-5',
+  lg: 'p-7',
   none: '',
 }
 
@@ -18,9 +18,9 @@ export function Card({ children, className, hover = false, padding = 'md' }: Car
   return (
     <div
       className={cn(
-        'glass-card',
+        'panel',
         paddingMap[padding],
-        hover && 'hover:border-white/[0.14] hover:bg-white/[0.06] transition-all duration-200 cursor-pointer',
+        hover && 'hover:border-line-strong hover:bg-ink-700 transition-colors duration-150',
         className,
       )}
     >
@@ -30,17 +30,9 @@ export function Card({ children, className, hover = false, padding = 'md' }: Car
 }
 
 export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn('flex items-center justify-between mb-4', className)}>
-      {children}
-    </div>
-  )
+  return <div className={cn('mb-4 flex items-center justify-between', className)}>{children}</div>
 }
 
 export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <h3 className={cn('text-base font-semibold text-white', className)}>
-      {children}
-    </h3>
-  )
+  return <h3 className={cn('text-sm font-semibold text-white', className)}>{children}</h3>
 }

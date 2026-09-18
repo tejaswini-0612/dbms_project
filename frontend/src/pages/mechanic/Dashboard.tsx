@@ -1,114 +1,90 @@
-import { useQuery } from '@tanstack/react-query'
-import { serviceRequestsApi } from '@/api/serviceRequests'
-import { Card } from '@/components/ui/Card'
-import { Spinner } from '@/components/ui/Spinner'
-import { useAuthStore } from '@/store/authStore'
-import { Briefcase, Clock, CheckCircle, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useSession } from '@/store/authStore'
+import { useAssignedJobs, usePendingJobs } from '@/hooks/useServiceRequests'
+import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Spinner } from '@/components/ui/Spinner'
 import { StatusBadge } from '@/components/domain/StatusBadge'
-import { formatDate } from '@/utils/formatDate'
+import { formatDateTime } from '@/utils/formatDate'
 
 export default function MechanicDashboard() {
-  const user = useAuthStore((s) => s.user)
-
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ['assigned-jobs'],
-    queryFn: () => serviceRequestsApi.listAssigned(1),
-    refetchInterval: 30_000,
-  })
+  const user = useSession()
+  const { data: jobs, isLoading } = useAssignedJobs()
+  const { data: available } = usePendingJobs()
 
   const pending = jobs?.filter((j) => j.status === 'Pending') ?? []
   const inProgress = jobs?.filter((j) => j.status === 'In Progress') ?? []
   const completed = jobs?.filter((j) => j.status === 'Completed') ?? []
+  const active = [...pending, ...inProgress]
 
   const stats = [
-    {
-      icon: Clock,
-      label: 'Pending',
-      value: isLoading ? '—' : String(pending.length),
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-    },
-    {
-      icon: Briefcase,
-      label: 'In Progress',
-      value: isLoading ? '—' : String(inProgress.length),
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-    },
-    {
-      icon: CheckCircle,
-      label: 'Completed',
-      value: isLoading ? '—' : String(completed.length),
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-    },
+    { label: 'Assigned, not started', value: isLoading ? '—' : String(pending.length) },
+    { label: 'In progress', value: isLoading ? '—' : String(inProgress.length) },
+    { label: 'Completed', value: isLoading ? '—' : String(completed.length) },
+    { label: 'Unclaimed', value: available ? String(available.length) : '—' },
   ]
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">
-          Welcome,{' '}
-          <span className="gradient-text">{user?.name?.split(' ')[0] ?? 'Mechanic'}</span> 🔧
-        </h1>
-        <p className="text-white/50 mt-1 text-sm">Here are your assigned jobs today.</p>
+    <div className="animate-fade-in space-y-10">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Overview</p>
+          <h1 className="mt-2 text-2xl font-semibold text-white">
+            {user?.name?.split(' ')[0] ?? 'Workshop'}
+          </h1>
+        </div>
+        <Link to="/mechanic/jobs">
+          <Button>Go to jobs</Button>
+        </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {stats.map(({ icon: Icon, label, value, color, bg }) => (
-          <Card key={label} className="flex items-center gap-4">
-            <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-              <Icon className={`w-5 h-5 ${color}`} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50">{label}</p>
-              <p className="text-2xl font-bold text-white">{value}</p>
-            </div>
-          </Card>
+      <div className="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4">
+        {stats.map(({ label, value }) => (
+          <div key={label} className="bg-ink-800 p-5">
+            <p className="eyebrow">{label}</p>
+            <p className="numeric mt-3 text-3xl font-semibold text-white">{value}</p>
+          </div>
         ))}
       </div>
 
-      {/* Active jobs preview */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-white">Active Jobs</h2>
-          <Link to="/mechanic/jobs">
-            <Button variant="ghost" size="sm">
-              All Jobs <ChevronRight className="w-3 h-3" />
-            </Button>
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white">Active jobs</h2>
+          <Link to="/mechanic/jobs" className="text-xs text-white/45 transition-colors hover:text-white">
+            View all
           </Link>
         </div>
 
         {isLoading ? (
           <Spinner fullPage />
-        ) : [...pending, ...inProgress].length === 0 ? (
-          <Card className="text-center py-10">
-            <CheckCircle className="w-10 h-10 text-emerald-400/30 mx-auto mb-3" />
-            <p className="text-white/40 text-sm">All caught up! No active jobs right now.</p>
+        ) : active.length === 0 ? (
+          <Card className="py-12 text-center">
+            <p className="text-sm text-white/40">No active jobs right now.</p>
+            <Link to="/mechanic/jobs" className="mt-4 inline-block">
+              <Button size="sm" variant="outline">
+                Find available work
+              </Button>
+            </Link>
           </Card>
         ) : (
-          <div className="space-y-2">
-            {[...pending, ...inProgress].slice(0, 5).map((job) => (
-              <Card key={job.request_id} padding="sm" className="flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white">
+          <div className="divide-rows overflow-hidden rounded-lg border border-line">
+            {active.slice(0, 6).map((job) => (
+              <div key={job.request_id} className="flex items-center gap-4 bg-ink-800 px-5 py-4">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-white">
                     {job.service_name ?? `Job #${job.request_id}`}
                   </p>
-                  <p className="text-xs text-white/40">
-                    {job.registration_number ?? `Vehicle #${job.vehicle_id}`} •{' '}
-                    {formatDate(job.requested_at)}
+                  <p className="numeric mt-1 text-xs text-white/35">
+                    {job.registration_number ?? `Vehicle #${job.vehicle_id}`} ·{' '}
+                    {formatDateTime(job.requested_at)}
                   </p>
                 </div>
                 <StatusBadge status={job.status} />
-              </Card>
+              </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   )
 }

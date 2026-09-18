@@ -60,6 +60,7 @@ async def create_service_request(
             selectinload(models.ServiceRequest.mechanic),
         )
         .where(models.ServiceRequest.request_id == new_request.request_id)
+        .execution_options(populate_existing=True)
     )
     loaded = result.scalars().first()
     return _enrich(loaded)
@@ -140,6 +141,9 @@ async def self_assign_request(
             selectinload(models.ServiceRequest.mechanic),
         )
         .where(models.ServiceRequest.request_id == request_id)
+        # Columns the DB trigger writes (completed_at) are only visible if the
+        # cached instance is overwritten with the fresh row.
+        .execution_options(populate_existing=True)
     )
     return _enrich(loaded_result.scalars().first())
 
@@ -170,6 +174,9 @@ async def update_request_status(
             selectinload(models.ServiceRequest.mechanic),
         )
         .where(models.ServiceRequest.request_id == request_id)
+        # Columns the DB trigger writes (completed_at) are only visible if the
+        # cached instance is overwritten with the fresh row.
+        .execution_options(populate_existing=True)
     )
     return _enrich(loaded_result.scalars().first())
 

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
+import { useSession } from '@/store/authStore'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -7,15 +7,10 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
-  const currentRole = useAuthStore((s) => s.role)
+  const user = useSession()
 
-  if (!currentRole) {
-    return <Navigate to="/login" replace />
-  }
-
-  if (currentRole !== role) {
-    return <Navigate to="/login" replace />
-  }
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role !== role) return <Navigate to={`/${user.role}/dashboard`} replace />
 
   return <>{children}</>
 }

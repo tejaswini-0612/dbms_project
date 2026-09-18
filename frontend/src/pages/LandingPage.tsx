@@ -1,174 +1,119 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Wrench, Shield, Clock, Star, ChevronRight, Car, CheckCircle } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { useAuthStore } from '@/store/authStore'
 import { useEffect } from 'react'
+import { Button } from '@/components/ui/Button'
+import { useSession } from '@/store/authStore'
 
-const features = [
+const capabilities = [
   {
-    icon: Car,
-    title: 'Multi-Vehicle Support',
-    description: 'Manage all your vehicles from a single account — cars, bikes, trucks.',
+    title: 'Vehicle records',
+    description: 'Register every vehicle on one account and keep its details in one place.',
   },
   {
-    icon: Clock,
-    title: 'Real-Time Status',
-    description: 'Track your service request live — from Pending to Completed.',
+    title: 'Live request status',
+    description: 'Follow a job from pending, through in progress, to completed.',
   },
   {
-    icon: Shield,
-    title: 'Auto-Generated Invoices',
-    description: 'Invoices are generated automatically the moment your job is done.',
+    title: 'Automatic invoicing',
+    description: 'An invoice with tax is raised the moment a mechanic marks the job done.',
   },
   {
-    icon: Star,
-    title: 'Full Service History',
-    description: 'Every completed service is permanently recorded for future reference.',
+    title: 'Permanent history',
+    description: 'Completed and closed jobs stay on record with their final amounts.',
   },
 ]
 
 const steps = [
-  'Register & add your vehicles',
-  'Book a service — pick type & mechanic',
-  'Track status in real time',
-  'Pay invoice online when done',
+  'Open the customer portal and add your vehicles.',
+  'Book a service, choosing the type and optionally a mechanic.',
+  'Track the request while the workshop works through it.',
+  'Settle the invoice once the job is complete.',
 ]
 
 export default function LandingPage() {
-  const { token, user } = useAuthStore()
+  const user = useSession()
   const navigate = useNavigate()
 
-  // Redirect already-logged-in users
   useEffect(() => {
-    if (token && user) {
-      navigate(user.role === 'customer' ? '/customer/dashboard' : '/mechanic/dashboard', {
-        replace: true,
-      })
-    }
-  }, [token, user, navigate])
+    if (user) navigate(`/${user.role}/dashboard`, { replace: true })
+  }, [user, navigate])
 
   return (
     <div className="min-h-screen">
-      {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0a0a14]/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center">
-              <Wrench className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-base font-bold text-white">VSMS</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/login">
+      <header className="sticky top-0 z-40 border-b border-line bg-ink-900/90 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+          <span className="text-sm font-semibold tracking-[0.2em] text-white">VSMS</span>
+          <div className="flex items-center gap-2">
+            <Link to="/signup">
               <Button variant="ghost" size="sm">
-                Sign In
+                Register
               </Button>
             </Link>
-            <Link to="/signup">
-              <Button size="sm">Get Started</Button>
+            <Link to="/login">
+              <Button size="sm">Open the app</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative px-6 pt-24 pb-20 text-center overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-600/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-violet-600/08 rounded-full blur-2xl" />
-        </div>
-
-        <div className="relative max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-300 text-sm font-medium mb-6">
-            <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse" />
-            Vehicle Service Management System
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-white mb-6 leading-tight text-balance">
-            Your car deserves{' '}
-            <span className="gradient-text">the best care.</span>
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-24">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Vehicle Service Management System</p>
+          <h1 className="mt-5 text-4xl font-semibold leading-[1.15] text-white sm:text-5xl">
+            Service management,
+            <br />
+            <span className="text-accent-500">kept in order.</span>
           </h1>
-
-          <p className="text-lg text-white/50 max-w-xl mx-auto mb-10 text-balance">
-            Book services, track repairs, pay invoices, and review complete service history — all
-            in one place.
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/50">
+            Book workshop services, watch the job progress, and settle invoices — with every
+            vehicle and every past service held in a single record.
           </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/signup">
-              <Button size="lg" icon={<ChevronRight className="w-4 h-4" />}>
-                Start for Free
-              </Button>
-            </Link>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link to="/login">
-              <Button size="lg" variant="secondary">
-                Sign In
+              <Button size="lg">Open the app</Button>
+            </Link>
+            <Link to="/signup">
+              <Button size="lg" variant="outline">
+                Register a customer
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="px-6 py-16 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-center text-white mb-10">How it works</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {steps.map((step, i) => (
-            <div
-              key={i}
-              className="glass-card p-5 flex flex-col gap-3 hover:border-brand-500/20 transition-all duration-300"
-            >
-              <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                {i + 1}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <p className="eyebrow">Capabilities</p>
+          <div className="mt-7 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
+            {capabilities.map(({ title, description }) => (
+              <div key={title} className="bg-ink-800 p-6">
+                <h3 className="text-sm font-semibold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/45">{description}</p>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-white/70">{step}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="px-6 py-16 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-center text-white mb-10">Everything you need</h2>
-        <div className="grid sm:grid-cols-2 gap-5">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div
-              key={title}
-              className="glass-card p-6 flex gap-4 hover:border-white/[0.14] transition-all duration-300 group"
-            >
-              <div className="w-10 h-10 bg-brand-gradient rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">{title}</h3>
-                <p className="text-sm text-white/50">{description}</p>
-              </div>
-            </div>
-          ))}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <p className="eyebrow">How it works</p>
+          <ol className="mt-7 divide-rows overflow-hidden rounded-lg border border-line">
+            {steps.map((step, i) => (
+              <li key={step} className="flex items-baseline gap-5 bg-ink-800 px-6 py-5">
+                <span className="numeric text-xs text-accent-500">{String(i + 1).padStart(2, '0')}</span>
+                <span className="text-sm text-white/70">{step}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-6 py-20 text-center">
-        <div className="max-w-xl mx-auto glass-card p-10">
-          <h2 className="text-2xl font-bold text-white mb-3">Ready to get started?</h2>
-          <p className="text-white/50 mb-8">
-            Create a free account and book your first service in minutes.
+      <footer className="border-t border-line">
+        <div className="mx-auto max-w-5xl px-6 py-8">
+          <p className="text-xs text-white/30">
+            © {new Date().getFullYear()} VSMS — Vehicle Service Management System
           </p>
-          <Link to="/signup">
-            <Button size="lg" className="w-full sm:w-auto">
-              Create Free Account
-            </Button>
-          </Link>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] px-6 py-6 text-center text-sm text-white/30">
-        © {new Date().getFullYear()} VSMS — Vehicle Service Management System
       </footer>
     </div>
   )

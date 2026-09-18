@@ -1,16 +1,12 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 
-interface AppShellProps {
-  role: 'customer' | 'mechanic'
-}
-
-export function AppShell({ role }: AppShellProps) {
+export function AppShell({ role }: { role: 'customer' | 'mechanic' }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar role={role} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-8">
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto max-w-5xl px-10 py-10">
           <Outlet />
         </div>
       </main>

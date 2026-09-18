@@ -1,5 +1,4 @@
 import { cn } from '@/utils/cn'
-import { X } from 'lucide-react'
 import { useEffect, useCallback } from 'react'
 
 interface ModalProps {
@@ -44,33 +43,24 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
-      />
-      {/* Panel */}
-      <div
-        className={cn(
-          'relative w-full glass-card p-6 shadow-2xl animate-slide-up',
-          sizeMap[size],
-        )}
-      >
+      <div className="absolute inset-0 bg-black/70 animate-fade-in" onClick={onClose} />
+
+      <div className={cn('relative w-full panel bg-ink-800 shadow-2xl animate-rise', sizeMap[size])}>
         {title && (
-          <div className="flex items-center justify-between mb-5">
-            <h2 id="modal-title" className="text-lg font-semibold text-white">
+          <div className="flex items-start justify-between border-b border-line px-5 py-4">
+            <h2 id="modal-title" className="text-sm font-semibold text-white">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="text-white/40 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
-              aria-label="Close modal"
+              aria-label="Close"
+              className="-mr-1 -mt-1 rounded px-2 pb-1 text-lg leading-none text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white"
             >
-              <X className="w-5 h-5" />
+              &times;
             </button>
           </div>
         )}
-        {children}
+        <div className="p-5">{children}</div>
       </div>
     </div>
   )

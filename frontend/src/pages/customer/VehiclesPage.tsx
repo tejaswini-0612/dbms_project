@@ -5,12 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useVehicles } from '@/hooks/useVehicles'
 import { vehiclesApi } from '@/api/vehicles'
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
+import { useSession } from '@/store/authStore'
+import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/Spinner'
-import { Car, Plus, Calendar, Hash } from 'lucide-react'
 import { formatDate } from '@/utils/formatDate'
 
 const schema = z.object({
@@ -20,7 +20,7 @@ const schema = z.object({
   year: z
     .number({ invalid_type_error: 'Year must be a number' })
     .min(1980, 'Year must be 1980 or later')
-    .max(new Date().getFullYear() + 1, 'Invalid year'),
+    .max(new Date().getFullYear() + 1, 'Year is not valid'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -29,140 +29,105 @@ export default function VehiclesPage() {
   const [open, setOpen] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const queryClient = useQueryClient()
+  const user = useSession()
   const { data: vehicles, isLoading } = useVehicles()
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
+  const close = () => {
+    setOpen(false)
+    reset()
+    setServerError(null)
+  }
+
   const addMutation = useMutation({
-    mutationFn: (data: FormData) => vehiclesApi.create(data, 1),
+    mutationFn: (data: FormData) => vehiclesApi.create(data, user!.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] })
-      setOpen(false)
-      reset()
-      setServerError(null)
+      close()
     },
     onError: (err: unknown) => {
       const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
-      let msg = 'Failed to add vehicle. Check your connection.'
       if (typeof detail === 'string') {
-        if (detail.includes('already exists') || detail.includes('duplicate') || detail.includes('unique')) {
-          msg = '⚠️ A vehicle with this registration number already exists.'
-        } else {
-          msg = detail
-        }
+        setServerError(detail)
       } else if (Array.isArray(detail)) {
-        msg = detail.map((e: { msg?: string; loc?: string[] }) =>
-          `${e.loc?.slice(-1)[0] ?? 'Field'}: ${e.msg}`
-        ).join(' | ')
+        setServerError(
+          detail
+            .map((e: { msg?: string; loc?: string[] }) => `${e.loc?.slice(-1)[0] ?? 'Field'}: ${e.msg}`)
+            .join(' · '),
+        )
+      } else {
+        setServerError('Could not add the vehicle. Is the server running?')
       }
-      setServerError(msg)
     },
   })
 
-  const onSubmit = (data: FormData) => {
-    setServerError(null)
-    addMutation.mutate(data)
-  }
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="animate-fade-in space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Vehicles</h1>
-          <p className="text-white/50 text-sm mt-1">
-            {vehicles?.length ?? 0} vehicle{vehicles?.length !== 1 ? 's' : ''} registered
-          </p>
+          <p className="eyebrow">Vehicles</p>
+          <h1 className="mt-2 text-2xl font-semibold text-white">
+            {vehicles?.length ?? 0} registered
+          </h1>
         </div>
-        <Button id="add-vehicle-btn" onClick={() => setOpen(true)} icon={<Plus />}>
-          Add Vehicle
+        <Button id="add-vehicle-btn" onClick={() => setOpen(true)}>
+          Add vehicle
         </Button>
       </div>
 
       {isLoading ? (
         <Spinner fullPage />
       ) : !vehicles || vehicles.length === 0 ? (
-        <Card className="text-center py-16">
-          <Car className="w-14 h-14 text-white/15 mx-auto mb-4" />
-          <p className="text-white/40 mb-6">No vehicles registered yet</p>
-          <Button onClick={() => setOpen(true)} icon={<Plus />}>
+        <Card className="py-16 text-center">
+          <p className="text-sm text-white/40">No vehicles registered yet.</p>
+          <Button className="mt-5" size="sm" variant="outline" onClick={() => setOpen(true)}>
             Add your first vehicle
           </Button>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="divide-rows overflow-hidden rounded-lg border border-line">
+          <div className="hidden bg-ink-700 px-5 py-3 sm:grid sm:grid-cols-[1fr_1fr_auto] sm:gap-4">
+            <span className="eyebrow">Vehicle</span>
+            <span className="eyebrow">Registration</span>
+            <span className="eyebrow">Added</span>
+          </div>
           {vehicles.map((v) => (
-            <Card key={v.vehicle_id} hover className="flex flex-col gap-4">
-              {/* Header */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Car className="w-5 h-5 text-blue-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white truncate">
-                    {v.make} {v.model}
-                  </p>
-                  <p className="text-xs text-white/40">{v.year}</p>
-                </div>
+            <div
+              key={v.vehicle_id}
+              className="grid gap-1 bg-ink-800 px-5 py-4 sm:grid-cols-[1fr_1fr_auto] sm:items-center sm:gap-4"
+            >
+              <div>
+                <p className="text-sm text-white">
+                  {v.make} {v.model}
+                </p>
+                <p className="numeric text-xs text-white/35">{v.year}</p>
               </div>
-
-              {/* Details */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Hash className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-                  <span className="font-mono text-white/80 tracking-wide">
-                    {v.registration_number}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-white/40">
-                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                  Added {formatDate(v.created_at)}
-                </div>
-              </div>
-            </Card>
+              <p className="numeric text-sm tracking-wide text-white/70">{v.registration_number}</p>
+              <p className="text-xs text-white/35">{formatDate(v.created_at)}</p>
+            </div>
           ))}
         </div>
       )}
 
-      {/* Add vehicle modal */}
-      <Modal
-        isOpen={open}
-        onClose={() => {
-          setOpen(false)
-          reset()
-          setServerError(null)
-        }}
-        title="Add New Vehicle"
-        size="sm"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <Modal isOpen={open} onClose={close} title="Add a vehicle" size="sm">
+        <form onSubmit={handleSubmit((d) => addMutation.mutate(d))} noValidate className="space-y-4">
           <Input
             id="reg-number"
-            label="Registration Number"
-            placeholder="TN01AB1234"
+            label="Registration number"
+            placeholder="MH-12-AB-1234"
             error={errors.registration_number?.message}
             {...register('registration_number')}
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              id="make"
-              label="Make"
-              placeholder="Honda"
-              error={errors.make?.message}
-              {...register('make')}
-            />
-            <Input
-              id="model"
-              label="Model"
-              placeholder="City"
-              error={errors.model?.message}
-              {...register('model')}
-            />
+            <Input id="make" label="Make" placeholder="Honda" error={errors.make?.message} {...register('make')} />
+            <Input id="model" label="Model" placeholder="City" error={errors.model?.message} {...register('model')} />
           </div>
 
           <Input
@@ -175,30 +140,17 @@ export default function VehiclesPage() {
           />
 
           {serverError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-              <p className="text-sm text-red-400">{serverError}</p>
+            <div className="rounded-md border border-state-due/25 bg-state-due/10 px-3 py-2.5">
+              <p className="text-xs text-state-due">{serverError}</p>
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex-1"
-              onClick={() => {
-                setOpen(false)
-                reset()
-              }}
-            >
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="secondary" className="flex-1" onClick={close}>
               Cancel
             </Button>
-            <Button
-              id="add-vehicle-submit"
-              type="submit"
-              className="flex-1"
-              loading={isSubmitting || addMutation.isPending}
-            >
-              Add Vehicle
+            <Button id="add-vehicle-submit" type="submit" className="flex-1" loading={addMutation.isPending}>
+              Add vehicle
             </Button>
           </div>
         </form>

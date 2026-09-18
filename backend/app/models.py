@@ -1,7 +1,13 @@
-from sqlalchemy import Column, Integer, String, Text, SmallInteger, Numeric, DateTime, ForeignKey, Enum
+﻿from sqlalchemy import Column, Integer, String, Text, SmallInteger, Numeric, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import Base
+
+
+def utcnow():
+    """Timezone-aware UTC. A naive datetime would be read back as local time by
+    the TIMESTAMPTZ columns, shifting every timestamp by the UTC offset."""
+    return datetime.now(timezone.utc)
 
 class Customer(Base):
     __tablename__ = "customer"
@@ -12,7 +18,7 @@ class Customer(Base):
     phone = Column(String(15), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     address = Column(Text)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
 
     vehicles = relationship("Vehicle", back_populates="customer")
 
@@ -26,7 +32,7 @@ class Mechanic(Base):
     phone = Column(String(15), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     specialization = Column(String(100))
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
 
     service_requests = relationship("ServiceRequest", back_populates="mechanic")
 
@@ -40,7 +46,7 @@ class Vehicle(Base):
     make = Column(String(50), nullable=False)
     model = Column(String(50), nullable=False)
     year = Column(SmallInteger)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
 
     customer = relationship("Customer", back_populates="vehicles")
     service_requests = relationship("ServiceRequest", back_populates="vehicle")
@@ -64,8 +70,8 @@ class ServiceRequest(Base):
     service_type_id = Column(Integer, ForeignKey("service_type.service_type_id"), nullable=False)
     mechanic_id = Column(Integer, ForeignKey("mechanic.mechanic_id"), nullable=True, index=True)
     status = Column(Enum('Pending', 'In Progress', 'Completed', 'Closed', name="service_status"), default='Pending', nullable=False, index=True)
-    requested_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    requested_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     closed_reason = Column(Text, nullable=True)
 
@@ -84,7 +90,7 @@ class Invoice(Base):
     tax = Column(Numeric(10, 2), nullable=False, default=0)
     total_amount = Column(Numeric(10, 2), nullable=False)
     status = Column(Enum('Unpaid', 'Paid', name="invoice_status"), default='Unpaid', nullable=False)
-    generated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    generated_at = Column(DateTime(timezone=True), default=utcnow)
 
     service_request = relationship("ServiceRequest", back_populates="invoice")
     payments = relationship("Payment", back_populates="invoice")
@@ -98,6 +104,7 @@ class Payment(Base):
     amount = Column(Numeric(10, 2), nullable=False)
     method = Column(Enum('Cash', 'Card', 'UPI', name="payment_method"), nullable=False)
     status = Column(Enum('Pending', 'Success', 'Failed', name="payment_status"), default='Success', nullable=False)
-    paid_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    paid_at = Column(DateTime(timezone=True), default=utcnow)
 
     invoice = relationship("Invoice", back_populates="payments")
+

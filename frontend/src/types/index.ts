@@ -12,14 +12,9 @@ export interface AuthUser {
 export interface AuthTokenPayload {
   sub: string  // user id as string
   role: Role
-  name: string
+  name?: string
+  email?: string
   exp: number
-}
-
-export interface LoginRequest {
-  email: string
-  password: string
-  role: Role
 }
 
 export interface CustomerSignupRequest {

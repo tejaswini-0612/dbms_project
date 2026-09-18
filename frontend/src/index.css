@@ -7,75 +7,76 @@
     box-sizing: border-box;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
-
   body {
-    @apply bg-[#0a0a14] text-white font-sans;
-    background-image: radial-gradient(ellipse at 20% 50%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
-                      radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 50%);
-    background-attachment: fixed;
+    @apply bg-ink-900 font-sans antialiased;
+    color: #EDEDEF;
     min-height: 100vh;
   }
 
+  h1, h2, h3 {
+    letter-spacing: -0.015em;
+  }
+
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.03);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.4);
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.6);
+    background: rgba(255, 255, 255, 0.18);
+    background-clip: content-box;
   }
 }
 
 @layer components {
-  /* Glass card */
-  .glass-card {
-    @apply bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] rounded-2xl;
+  .panel {
+    @apply bg-ink-800 border border-line rounded-lg;
   }
 
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  /* Small uppercase label — replaces decorative icons as the labelling device */
+  .eyebrow {
+    @apply text-2xs font-medium uppercase tracking-[0.14em] text-white/40;
   }
 
-  /* Skeleton loader */
-  .skeleton {
-    @apply animate-pulse bg-white/[0.06] rounded-lg;
+  .field {
+    @apply w-full bg-ink-900 border border-line rounded-md px-3 py-2.5
+           text-sm text-white placeholder:text-white/25
+           focus:outline-none focus:border-accent-500/60 focus:ring-1 focus:ring-accent-500/20
+           transition-colors duration-150;
   }
 
-  /* Input base */
-  .input-base {
-    @apply w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-4 py-2.5
-           text-white placeholder:text-white/30 text-sm
-           focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/30
-           transition-all duration-200;
-  }
-
-  /* Sidebar nav item */
   .nav-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           text-white/60 hover:text-white hover:bg-white/[0.06]
-           transition-all duration-200 cursor-pointer;
+    @apply relative flex items-center px-3 py-2 rounded-md text-sm
+           text-white/55 hover:text-white hover:bg-white/[0.04]
+           transition-colors duration-150;
   }
 
   .nav-item.active {
-    @apply text-white bg-brand-600/30 border border-brand-500/20;
+    @apply text-white bg-white/[0.06];
   }
-}
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .nav-item.active::before {
+    content: '';
+    @apply absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] bg-accent-500 rounded-full;
+  }
+
+  /* Money and IDs line up column-wise */
+  .numeric {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .divide-rows > * + * {
+    @apply border-t border-line;
   }
 }

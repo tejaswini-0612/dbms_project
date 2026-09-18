@@ -1,98 +1,59 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
+import { useAuthStore, useSession } from '@/store/authStore'
 import { cn } from '@/utils/cn'
-import {
-  LayoutDashboard,
-  Car,
-  CalendarPlus,
-  ClipboardList,
-  History,
-  LogOut,
-  Wrench,
-  Briefcase,
-} from 'lucide-react'
 
 const customerNav = [
-  { to: '/customer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/customer/vehicles', icon: Car, label: 'My Vehicles' },
-  { to: '/customer/book', icon: CalendarPlus, label: 'Book Service' },
-  { to: '/customer/requests', icon: ClipboardList, label: 'My Requests' },
-  { to: '/customer/history', icon: History, label: 'Service History' },
+  { to: '/customer/dashboard', label: 'Overview' },
+  { to: '/customer/vehicles', label: 'Vehicles' },
+  { to: '/customer/book', label: 'Book a service' },
+  { to: '/customer/requests', label: 'Requests' },
+  { to: '/customer/history', label: 'History' },
 ]
 
 const mechanicNav = [
-  { to: '/mechanic/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/mechanic/jobs', icon: Briefcase, label: 'My Jobs' },
+  { to: '/mechanic/dashboard', label: 'Overview' },
+  { to: '/mechanic/jobs', label: 'Jobs' },
 ]
 
-interface SidebarProps {
-  role: 'customer' | 'mechanic'
-}
-
-export function Sidebar({ role }: SidebarProps) {
-  const { logout, user } = useAuthStore()
+export function Sidebar({ role }: { role: 'customer' | 'mechanic' }) {
+  const logout = useAuthStore((s) => s.logout)
+  const user = useSession()
   const navigate = useNavigate()
   const navItems = role === 'customer' ? customerNav : mechanicNav
 
-  const handleLogout = () => {
+  const leavePortal = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
   return (
-    <aside className="w-64 flex-shrink-0 h-screen sticky top-0 flex flex-col border-r border-white/[0.06] bg-white/[0.02]">
-      {/* Logo */}
-      <div className="p-6 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-brand-gradient rounded-lg flex items-center justify-center">
-            <Wrench className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-none">VSMS</p>
-            <p className="text-[10px] text-white/40 mt-0.5">
-              {role === 'customer' ? 'Customer Portal' : 'Mechanic Portal'}
-            </p>
-          </div>
-        </div>
+    <aside className="sticky top-0 flex h-screen w-60 flex-shrink-0 flex-col border-r border-line bg-ink-800">
+      <div className="border-b border-line px-5 py-5">
+        <p className="text-sm font-semibold tracking-[0.2em] text-white">VSMS</p>
+        <p className="eyebrow mt-1">
+          {role === 'customer' ? 'Customer portal' : 'Workshop portal'}
+        </p>
       </div>
 
-      {/* User info */}
-      <div className="px-4 py-4 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]">
-          <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-sm font-semibold text-white flex-shrink-0">
-            {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.name ?? '—'}</p>
-            <p className="text-xs text-white/40 capitalize">{role}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Nav links */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn('nav-item', isActive && 'active')
-            }
-          >
-            <Icon className="w-4 h-4 flex-shrink-0" />
+      <nav className="flex-1 space-y-0.5 p-3">
+        {navItems.map(({ to, label }) => (
+          <NavLink key={to} to={to} className={({ isActive }) => cn('nav-item', isActive && 'active')}>
             {label}
           </NavLink>
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-white/[0.06]">
+      <div className="border-t border-line p-3">
+        <div className="px-3 py-2">
+          <p className="truncate text-sm text-white">{user?.name || '—'}</p>
+          <p className="truncate text-xs text-white/35">{user?.email || ''}</p>
+        </div>
         <button
-          onClick={handleLogout}
-          className="nav-item w-full text-red-400/70 hover:text-red-400 hover:bg-red-500/10"
+          id="switch-portal"
+          onClick={leavePortal}
+          className="nav-item w-full text-white/45 hover:text-white"
         >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          Log Out
+          Switch portal
         </button>
       </div>
     </aside>

@@ -8,57 +8,52 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
       },
       colors: {
-        brand: {
-          50:  '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+        ink: {
+          900: '#08090B', // page
+          800: '#0F1115', // surface
+          700: '#15181D', // raised
+          600: '#1C2026', // hover
+        },
+        line: {
+          DEFAULT: 'rgba(255,255,255,0.08)',
+          strong: 'rgba(255,255,255,0.14)',
         },
         accent: {
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
+          100: '#F0E4CC',
+          300: '#E0CB9E',
+          400: '#D3B77F',
+          500: '#C9A86C',
+          600: '#B08F52',
+          700: '#8C7140',
         },
-        surface: {
-          DEFAULT: '#0f0f1a',
-          50:  '#1a1a2e',
-          100: '#16213e',
-          200: '#1a1a2e',
-          300: '#0f3460',
+        state: {
+          pending: '#D9A03C',
+          progress: '#6E9BD1',
+          done: '#6FB287',
+          closed: '#8A8F98',
+          due: '#D07A6E',
         },
       },
-      backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-        'card-glass': 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'slide-up': 'slideUp 0.4s ease-out',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.25s ease-out',
+        'rise': 'rise 0.3s ease-out',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(16px)' },
+        rise: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-      },
-      backdropBlur: {
-        xs: '2px',
       },
     },
   },

@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 
 class ServiceStatus(str, Enum):
@@ -82,7 +81,7 @@ class ServiceTypeOut(BaseModel):
     service_type_id: int
     name: str
     description: Optional[str]
-    base_price: Decimal
+    base_price: float
     estimated_minutes: Optional[int]
 
     class Config:
@@ -122,9 +121,9 @@ class ServiceRequestClose(BaseModel):
 class InvoiceOut(BaseModel):
     invoice_id: int
     request_id: int
-    amount: Decimal
-    tax: Decimal
-    total_amount: Decimal
+    amount: float
+    tax: float
+    total_amount: float
     status: InvoiceStatus
     generated_at: datetime
 
@@ -133,13 +132,14 @@ class InvoiceOut(BaseModel):
 
 # --- Payment ---
 class PaymentCreate(BaseModel):
-    amount: Decimal
-    method: PaymentMethod
+    """Both fields are optional: the amount is taken from the invoice itself."""
+    amount: Optional[float] = None
+    method: PaymentMethod = PaymentMethod.Card
 
 class PaymentOut(BaseModel):
     payment_id: int
     invoice_id: int
-    amount: Decimal
+    amount: float
     method: PaymentMethod
     status: str
     paid_at: datetime
@@ -159,7 +159,7 @@ class ServiceHistoryOut(BaseModel):
     status: str
     requested_at: datetime
     completed_at: Optional[datetime]
-    total_amount: Optional[Decimal]
+    total_amount: Optional[float]
     invoice_status: Optional[str]
 
     class Config:

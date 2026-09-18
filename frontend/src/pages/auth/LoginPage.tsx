@@ -1,76 +1,106 @@
-import { useNavigate } from 'react-router-dom'
-import { Wrench, User, Wrench as MechanicIcon } from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { authApi } from '@/api/auth'
+import { useAuthStore, parseToken } from '@/store/authStore'
+import { Spinner } from '@/components/ui/Spinner'
+import { cn } from '@/utils/cn'
 import type { Role } from '@/types'
+
+const PORTALS: { role: Role; title: string; description: string }[] = [
+  {
+    role: 'customer',
+    title: 'Customer',
+    description: 'Register vehicles, book services, track requests and settle invoices.',
+  },
+  {
+    role: 'mechanic',
+    title: 'Mechanic',
+    description: 'Pick up requests from the queue, advance job status and close requests.',
+  },
+]
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const setRole = useAuthStore((s) => s.setRole)
+  const setAuth = useAuthStore((s) => s.setAuth)
+  const [pending, setPending] = useState<Role | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const enter = (role: Role) => {
-    setRole(role)
-    navigate(role === 'customer' ? '/customer/dashboard' : '/mechanic/dashboard', {
-      replace: true,
-    })
+  const enter = async (role: Role) => {
+    setError(null)
+    setPending(role)
+    try {
+      const { access_token } = await authApi.enterAs(role)
+      const user = parseToken(access_token)
+      if (!user) throw new Error('The server returned an invalid session token.')
+      setAuth(access_token, user)
+      navigate(`/${user.role}/dashboard`, { replace: true })
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setError(detail ?? 'Could not open the portal. Is the server running?')
+      setPending(null)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      {/* Background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-600/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-md relative">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-gradient rounded-2xl mb-4 shadow-lg shadow-brand-600/30">
-            <Wrench className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-white">VSMS</h1>
-          <p className="text-white/50 text-sm mt-2">Vehicle Service Management System</p>
-        </div>
-
-        <div className="glass-card p-8">
-          <h2 className="text-center text-white font-semibold text-lg mb-2">Enter as</h2>
-          <p className="text-center text-white/40 text-sm mb-8">Choose your role to continue</p>
-
-          <div className="space-y-4">
-            <button
-              id="enter-customer"
-              onClick={() => enter('customer')}
-              className="w-full group flex items-center gap-4 p-5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-brand-600/20 hover:border-brand-500/50 transition-all duration-200"
-            >
-              <div className="w-12 h-12 rounded-xl bg-brand-gradient flex items-center justify-center shadow-md shadow-brand-600/30 group-hover:scale-105 transition-transform">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-white font-semibold">Customer</p>
-                <p className="text-white/40 text-sm">Book services, track vehicles, pay invoices</p>
-              </div>
-              <span className="ml-auto text-white/30 group-hover:text-white/60 text-xl">→</span>
-            </button>
-
-            <button
-              id="enter-mechanic"
-              onClick={() => enter('mechanic')}
-              className="w-full group flex items-center gap-4 p-5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-emerald-600/20 hover:border-emerald-500/50 transition-all duration-200"
-            >
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-600/30 group-hover:scale-105 transition-transform">
-                <MechanicIcon className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-white font-semibold">Mechanic</p>
-                <p className="text-white/40 text-sm">View assigned jobs, update service status</p>
-              </div>
-              <span className="ml-auto text-white/30 group-hover:text-white/60 text-xl">→</span>
-            </button>
-          </div>
-
-          <p className="text-center text-xs text-white/25 mt-8">
-            Authentication disabled — demo mode
+    <div className="flex min-h-screen items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md">
+        <div className="mb-8">
+          <Link to="/" className="text-sm font-semibold tracking-[0.2em] text-white">
+            VSMS
+          </Link>
+          <h1 className="mt-6 text-xl font-semibold text-white">Choose a portal</h1>
+          <p className="mt-1 text-sm text-white/45">
+            Vehicle Service Management System
           </p>
         </div>
+
+        <div className="space-y-3">
+          {PORTALS.map(({ role, title, description }) => (
+            <button
+              key={role}
+              id={`enter-${role}`}
+              type="button"
+              disabled={pending !== null}
+              onClick={() => enter(role)}
+              className={cn(
+                'group flex w-full items-center gap-4 rounded-lg border border-line bg-ink-800 px-5 py-5 text-left',
+                'transition-colors duration-150 hover:border-accent-500/50 hover:bg-ink-700',
+                'focus-visible:outline-none focus-visible:border-accent-500/60',
+                'disabled:cursor-not-allowed disabled:opacity-50',
+              )}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-semibold text-white">{title}</span>
+                <span className="mt-1 block text-sm leading-relaxed text-white/45">
+                  {description}
+                </span>
+              </span>
+              {pending === role ? (
+                <Spinner size="sm" />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-white/25 transition-colors group-hover:text-accent-500"
+                >
+                  &rarr;
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="mt-4 rounded-md border border-state-due/25 bg-state-due/10 px-3 py-2.5">
+            <p className="text-xs text-state-due">{error}</p>
+          </div>
+        )}
+
+        <p className="mt-6 text-center text-sm text-white/40">
+          Need a fresh customer account?{' '}
+          <Link to="/signup" className="text-white transition-colors hover:text-accent-400">
+            Register one
+          </Link>
+        </p>
       </div>
     </div>
   )

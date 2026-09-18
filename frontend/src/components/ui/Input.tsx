@@ -4,42 +4,30 @@ import { InputHTMLAttributes, forwardRef } from 'react'
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
-  leftIcon?: React.ReactNode
+  hint?: string
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, leftIcon, id, ...props }, ref) => {
+  ({ className, label, error, hint, id, ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
-          <label
-            htmlFor={id}
-            className="block text-sm font-medium text-white/70 mb-1.5"
-          >
+          <label htmlFor={id} className="mb-1.5 block text-xs font-medium text-white/60">
             {label}
           </label>
         )}
-        <div className="relative">
-          {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4">
-              {leftIcon}
-            </div>
-          )}
-          <input
-            ref={ref}
-            id={id}
-            className={cn(
-              'input-base',
-              leftIcon && 'pl-10',
-              error && 'border-red-500/50 focus:border-red-500/60 focus:ring-red-500/20',
-              className,
-            )}
-            {...props}
-          />
-        </div>
-        {error && (
-          <p className="mt-1.5 text-xs text-red-400">{error}</p>
-        )}
+        <input
+          ref={ref}
+          id={id}
+          aria-invalid={!!error}
+          className={cn('field', error && 'border-state-due/50 focus:border-state-due/60 focus:ring-state-due/20', className)}
+          {...props}
+        />
+        {error ? (
+          <p className="mt-1.5 text-xs text-state-due">{error}</p>
+        ) : hint ? (
+          <p className="mt-1.5 text-xs text-white/35">{hint}</p>
+        ) : null}
       </div>
     )
   },

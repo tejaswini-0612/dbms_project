@@ -1,6 +1,5 @@
 import { cn } from '@/utils/cn'
 import { SelectHTMLAttributes, forwardRef } from 'react'
-import { ChevronDown } from 'lucide-react'
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
@@ -14,39 +13,33 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label
-            htmlFor={id}
-            className="block text-sm font-medium text-white/70 mb-1.5"
-          >
+          <label htmlFor={id} className="mb-1.5 block text-xs font-medium text-white/60">
             {label}
           </label>
         )}
-        <div className="relative">
-          <select
-            ref={ref}
-            id={id}
-            className={cn(
-              'input-base appearance-none pr-10 cursor-pointer',
-              '[&>option]:bg-[#1a1a2e] [&>option]:text-white',
-              error && 'border-red-500/50',
-              className,
-            )}
-            {...props}
-          >
-            {placeholder && (
-              <option value="" disabled>
-                {placeholder}
-              </option>
-            )}
-            {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-        </div>
-        {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
+        <select
+          ref={ref}
+          id={id}
+          className={cn(
+            'field cursor-pointer appearance-none pr-8',
+            '[&>option]:bg-ink-800 [&>option]:text-white',
+            error && 'border-state-due/50',
+            className,
+          )}
+          {...props}
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {error && <p className="mt-1.5 text-xs text-state-due">{error}</p>}
       </div>
     )
   },
