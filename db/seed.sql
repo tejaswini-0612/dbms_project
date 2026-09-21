@@ -7,7 +7,7 @@ INSERT INTO service_type (name, description, base_price, estimated_minutes) VALU
 
 -- Demo customer — email: john@example.com / password: password123
 INSERT INTO customer (name, email, phone, password_hash, address) VALUES
-('John Doe', 'john@example.com', '1234567890', '$2b$12$RkC9PTouPZgi4uUjN8sP1e8leGc9XosMg8gFt1NHppyP8Xv21yI.a', '123 Main St, City');
+('John Doe', 'john@example.com', '1234567890', '$2b$12$icd6Ep1W2a./rA3ueB5lE..siNWCQktNEFiJ1zxeC.m8ZwQ9cZdjy', '123 Main St, City');
 
 -- Insert 2 vehicles for the customer
 INSERT INTO vehicle (customer_id, registration_number, make, model, year) VALUES
@@ -16,5 +16,5 @@ INSERT INTO vehicle (customer_id, registration_number, make, model, year) VALUES
 
 -- Demo mechanics — password: password123
 INSERT INTO mechanic (name, email, phone, password_hash, specialization) VALUES
-('Mike Smith', 'mike@vsms.com', '0987654321', '$2b$12$RkC9PTouPZgi4uUjN8sP1e8leGc9XosMg8gFt1NHppyP8Xv21yI.a', 'General Repairs'),
-('Priya Nair', 'priya@vsms.com', '0987654322', '$2b$12$RkC9PTouPZgi4uUjN8sP1e8leGc9XosMg8gFt1NHppyP8Xv21yI.a', 'Engine & Transmission');
+('Mike Smith', 'mike@vsms.com', '0987654321', '$2b$12$icd6Ep1W2a./rA3ueB5lE..siNWCQktNEFiJ1zxeC.m8ZwQ9cZdjy', 'General Repairs'),
+('Priya Nair', 'priya@vsms.com', '0987654322', '$2b$12$icd6Ep1W2a./rA3ueB5lE..siNWCQktNEFiJ1zxeC.m8ZwQ9cZdjy', 'Engine & Transmission');
