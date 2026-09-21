@@ -47,6 +47,13 @@ class CustomerOut(BaseModel):
         from_attributes = True
 
 # --- Mechanic ---
+class MechanicCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    password: str
+    specialization: Optional[str] = "General Repairs"
+
 class MechanicOut(BaseModel):
     mechanic_id: int
     name: str

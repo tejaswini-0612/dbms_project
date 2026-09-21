@@ -49,7 +49,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link to="/login">
-              <Button size="sm">Open the app</Button>
+              <Button size="sm">Sign In</Button>
             </Link>
           </div>
         </div>
@@ -69,11 +69,11 @@ export default function LandingPage() {
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link to="/login">
-              <Button size="lg">Open the app</Button>
+              <Button size="lg">Sign In</Button>
             </Link>
             <Link to="/signup">
               <Button size="lg" variant="outline">
-                Register a customer
+                Register Account
               </Button>
             </Link>
           </div>

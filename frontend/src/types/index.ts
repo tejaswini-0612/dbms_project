@@ -25,6 +25,14 @@ export interface CustomerSignupRequest {
   address?: string
 }
 
+export interface MechanicSignupRequest {
+  name: string
+  email: string
+  phone: string
+  password: string
+  specialization?: string
+}
+
 export interface AuthResponse {
   access_token: string
   token_type: string

@@ -66,6 +66,35 @@ async def signup_customer(customer: schemas.CustomerCreate, db: AsyncSession = D
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.post("/mechanic/signup", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+async def signup_mechanic(mechanic: schemas.MechanicCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.Mechanic).where(models.Mechanic.email == mechanic.email))
+    if result.scalars().first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    new_mechanic = models.Mechanic(
+        name=mechanic.name,
+        email=mechanic.email,
+        phone=mechanic.phone,
+        password_hash=get_password_hash(mechanic.password),
+        specialization=mechanic.specialization or "General Repairs"
+    )
+    db.add(new_mechanic)
+    await db.commit()
+    await db.refresh(new_mechanic)
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={
+            "sub": str(new_mechanic.mechanic_id),
+            "role": "mechanic",
+            "name": new_mechanic.name,
+            "email": new_mechanic.email,
+        },
+        expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @router.post("/customer/login", response_model=schemas.Token)
 async def login_customer(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.Customer).where(models.Customer.email == form_data.username))
